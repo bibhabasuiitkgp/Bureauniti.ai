@@ -9,11 +9,7 @@ const app = express();
 const saltRounds = 10;
 
 // Middleware
-app.use(cors({
-    origin: '*',  // Your frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 app.use(bodyParser.json());
 
 function getCurrentUTCDateTime() {
@@ -207,3 +203,9 @@ app.post('/api/login', async (req, res) => {
 app.get('/', (req, res) => {
     res.send('Welcome to Startup API');
 });
+
+
+// app.listen(3000, () => {
+//     console.log('Server running on port 3000');
+// });
+// //
