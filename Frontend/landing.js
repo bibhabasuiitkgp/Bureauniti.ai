@@ -111,6 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://bureauniti-ai-pcqp.vercel.app/',
                     },
                     body: JSON.stringify({ username, password })
                 });
@@ -153,6 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': 'https://bureauniti-ai-pcqp.vercel.app/',
                     },
                     body: JSON.stringify(formData)
                 });
