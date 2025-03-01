@@ -107,11 +107,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch('https://backend-p1wb3muel-bibhabasu-debnaths-projects.vercel.app/api/login', {
+                const response = await fetch('https://backend-ouzjekk9v-bibhabasu-debnaths-projects.vercel.app/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://bureauniti-ai-pcqp.vercel.app/',
+                        'Access-Control-Allow-Origin': '*',
                     },
                     body: JSON.stringify({ username, password })
                 });
@@ -150,11 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('https://backend-p1wb3muel-bibhabasu-debnaths-projects.vercel.app/api/register', {
+                const response = await fetch('https://backend-ouzjekk9v-bibhabasu-debnaths-projects.vercel.app/api/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Access-Control-Allow-Origin': 'https://bureauniti-ai-pcqp.vercel.app/',
+                        'Access-Control-Allow-Origin': '*',
                     },
                     body: JSON.stringify(formData)
                 });
