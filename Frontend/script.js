@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!userData) {
         // Redirect to login if no user data is found
-        window.location.href = 'landing.html';
+        window.location.href = '/';
         return;
     }
 
@@ -311,5 +311,5 @@ function updateProfileInfo(userData) {
 // Function to handle logout
 function handleLogout() {
     localStorage.removeItem('userData');
-    window.location.href = 'landing.html';
+    window.location.href = '/';
 }
