@@ -22,6 +22,7 @@ if (!mongo_uri) {
     console.error('MongoDB URI missing');
     process.exit(1);
 }
+
 // MongoDB Connection
 mongoose.connect(mongo_uri, {
     useNewUrlParser: true,
@@ -87,6 +88,9 @@ const userSchema = new mongoose.Schema({
 // User Model
 const User = mongoose.model('User', userSchema);
 
+// Convert Express app to serverless function
+module.exports = app;
+
 // Register Route
 app.post('/api/register', async (req, res) => {
     console.log(req.body);
@@ -102,10 +106,8 @@ app.post('/api/register', async (req, res) => {
             age
         } = req.body;
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Create new user
         const user = new User({
             name,
             username,
@@ -155,7 +157,6 @@ app.post('/api/login', async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        // Find user and explicitly include password
         const user = await User.findOne({ username }).select('+password');
 
         if (!user) {
@@ -165,7 +166,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        // Compare passwords
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
@@ -175,7 +175,6 @@ app.post('/api/login', async (req, res) => {
             });
         }
 
-        // Send user data (excluding password)
         const userData = {
             name: user.name,
             username: user.username,
@@ -200,8 +199,7 @@ app.post('/api/login', async (req, res) => {
         });
     }
 });
-app.get('/', (req, res) => { res.send('Welcome to Startup API'); });
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+
+app.get('/', (req, res) => { 
+    res.send('Welcome to Startup API'); 
 });
