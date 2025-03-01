@@ -10,7 +10,7 @@ const saltRounds = 10;
 
 // Middleware
 app.use(cors({
-    origin: 'https://bureauniti-ai-pcqp.vercel.app',  // Your frontend URL
+    origin: 'http://127.0.0.1:5501/Frontend',  // Your frontend URL
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
