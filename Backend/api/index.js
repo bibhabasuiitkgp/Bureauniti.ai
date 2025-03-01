@@ -9,7 +9,11 @@ const app = express();
 const saltRounds = 10;
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: 'https://bureauniti-ai-pcqp.vercel.app',  // Your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 
 function getCurrentUTCDateTime() {
@@ -200,6 +204,6 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-app.get('/', (req, res) => { 
-    res.send('Welcome to Startup API'); 
+app.get('/', (req, res) => {
+    res.send('Welcome to Startup API');
 });
