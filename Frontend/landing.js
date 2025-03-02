@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateButtons(userData) {
         if (userData) {
             ctaButtons.innerHTML = `
-                <button class="btn dashboard-btn" onclick="window.location.href='dashboard.html'">Dashboard</button>
+                <button class="btn dashboard-btn" onclick="window.location.href='Dashboard.html'">Dashboard</button>
                 <button class="btn logout-btn">Logout</button>
             `;
 
