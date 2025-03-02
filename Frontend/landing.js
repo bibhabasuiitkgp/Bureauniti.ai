@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const response = await fetch('https://backend-ouzjekk9v-bibhabasu-debnaths-projects.vercel.app/api/login', {
+                const response = await fetch('http://localhost:3000/api/login', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -150,11 +150,13 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             try {
-                const response = await fetch('https://backend-ouzjekk9v-bibhabasu-debnaths-projects.vercel.app/api/register', {
+                console.log(formData);
+                const response = await fetch('http://localhost:3000/api/register', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Access-Control-Allow-Origin': '*',
+
                     },
                     body: JSON.stringify(formData)
                 });
