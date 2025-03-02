@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok && data.success) {
                     localStorage.setItem('userData', JSON.stringify(data.user));
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'Dashboard.html';
                 } else {
                     showError(loginForm, data.message || 'Invalid username or password');
                 }
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (response.ok && data.success) {
                     localStorage.setItem('userData', JSON.stringify(data.user));
-                    window.location.href = 'dashboard.html';
+                    window.location.href = 'Dashboard.html';
                 } else {
                     showError(registerForm, data.message || 'Error creating account');
                 }
