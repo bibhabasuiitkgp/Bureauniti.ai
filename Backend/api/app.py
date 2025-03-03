@@ -7,16 +7,32 @@ from OCR.generation import ImageAnalyzer
 import os
 import pytz
 import shutil
+import tempfile
 from pathlib import Path
 from uuid import uuid4
 from typing import Optional
 from datetime import datetime
 from fastapi import File, UploadFile
 from fastapi.responses import JSONResponse
+from Pdf_Qna.rag import RAGSystem, DocumentProcessor, EmbeddingEngine, LLMEngine
 from Voice_Dictation.grammar_correction import ProfessionalResponseGenerator
 from Voice_Dictation.speech_Recog import SpeechToText
 
+class QuestionRequest(BaseModel):
+    question: str
 
+class AnswerResponse(BaseModel):
+    question: str
+    answer: str
+    timestamp: str
+
+class StatusResponse(BaseModel):
+    status: str
+    message: str
+    timestamp: str
+
+def get_timestamp():
+    return datetime.now(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')
 
 class InferenceRequest(BaseModel):
     query: str
@@ -236,3 +252,66 @@ async def correct_text(text: str, model_name: Optional[str] = "mixtral-8x7b-3276
             status_code=500,
             content={"error": f"An error occurred: {str(e)}"}
         )
+        
+@app.post("/setup", response_model=StatusResponse)
+async def setup_rag_system(api_key: str = "orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF"):
+    """
+    Initialize the RAG system with the specified API key.
+    Uses a default API key if none is provided.
+    """
+    global rag_system
+    
+    try:
+        rag_system = RAGSystem(api_key=api_key)
+        
+        return StatusResponse(
+            status="success",
+            message="RAG system initialized successfully",
+            timestamp=get_timestamp()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error initializing RAG system: {str(e)}")
+
+@app.post("/process", response_model=AnswerResponse)
+async def process_document_and_question(
+    question: str, 
+    file: Optional[UploadFile] = File(None)
+):
+    """
+    Process a document (if provided) and answer a question.
+    If no document is provided, it will use previously ingested documents.
+    """
+    global rag_system
+    
+    if rag_system is None:
+        await setup_rag_system()
+    
+    try:
+        if file is not None:
+            if not file.filename.endswith('.pdf'):
+                raise HTTPException(status_code=400, detail="Only PDF files are supported")
+            
+            temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.pdf')
+            try:
+                with temp_file:
+                    shutil.copyfileobj(file.file, temp_file)
+                
+                rag_system.ingest_pdf(temp_file.name)
+                
+                os.unlink(temp_file.name)
+            except Exception as e:
+                if os.path.exists(temp_file.name):
+                    os.unlink(temp_file.name)
+                raise e
+        
+        answer = rag_system.get_answer(question)
+        
+        return AnswerResponse(
+            question=question,
+            answer=answer,
+            timestamp=get_timestamp()
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+    
