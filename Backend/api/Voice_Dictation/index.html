@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speech Recognition App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+    
+        html, body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+    
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            padding: 20px;
+            background-color: #121212;
+            color: #ffffff;
+        }
+    
+        h1 {
+            text-align: center;
+            color: #e9bc6b;
+            margin-bottom: 2vh;
+            font-size: 2.5rem;
+        }
+
+        /* Recording indicator styles */
+        .recording-indicator {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .mic-icon {
+            font-size: 3rem;
+            color: #e9bc6b;
+            transition: all 0.3s ease;
+        }
+
+        .mic-icon.recording {
+            color: #ff4444;
+            animation: pulse 1.5s ease infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 2vh 0;
+            padding: 10px;
+        }
+    
+        .controls button {
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 8px;
+            background-color: #e9bc6b;
+            color: #121212;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+    
+        .controls button:hover {
+            background-color: #d4a756;
+            transform: translateY(-2px);
+        }
+    
+        .controls button:disabled {
+            background-color: #444444;
+            color: #666666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #status {
+            text-align: center;
+            margin: 2vh 0;
+            padding: 10px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            background-color: #333333;
+        }
+
+        .status-indicator.success {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .status-indicator.warning {
+            background-color: #ff9800;
+            color: white;
+        }
+
+        .status-indicator.error {
+            background-color: #f44336;
+            color: white;
+        }
+    
+        #transcriptionArea {
+            flex-grow: 1;
+            width: 100%;
+            margin: 2vh 0;
+            padding: 20px;
+            border: 2px solid #444444;
+            border-radius: 8px;
+            background-color: #333333;
+            color: #ffffff;
+            font-size: 1.1rem;
+            resize: none;
+            min-height: 60vh;
+        }
+
+        /* Enhanced Progress Bar */
+        .progress-container {
+            width: 100%;
+            background-color: #333333;
+            border-radius: 20px;
+            margin: 10px 0;
+            overflow: hidden;
+            display: none;
+            position: relative;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 25px;
+            background: linear-gradient(90deg, #e9bc6b, #d4a756);
+            transition: width 0.3s ease;
+            position: relative;
+            border-radius: 20px;
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #121212;
+            font-weight: bold;
+            line-height: 25px;
+            text-shadow: 0 0 2px rgba(255, 255, 255, 0.5);
+            z-index: 1;
+        }
+
+        .progress-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent
+            );
+            animation: progress-wave 1.5s linear infinite;
+        }
+
+        @keyframes progress-wave {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+    
+        #downloadSection {
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+        }
+    
+        #downloadLink {
+            color: #e9bc6b;
+            text-decoration: none;
+            font-size: 1.1rem;
+            padding: 10px 20px;
+            border: 2px solid #e9bc6b;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+    
+        #downloadLink:hover {
+            background-color: #e9bc6b;
+            color: #121212;
+        }
+
+        /* Noise adjustment animation */
+        .noise-waves {
+            height: 40px;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            margin: 10px 0;
+        }
+
+        .wave {
+            width: 3px;
+            height: 20px;
+            background-color: #e9bc6b;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        @keyframes wave {
+            0%, 100% { height: 20px; }
+            50% { height: 40px; }
+        }
+
+        .wave:nth-child(2) { animation-delay: 0.1s; }
+        .wave:nth-child(3) { animation-delay: 0.2s; }
+        .wave:nth-child(4) { animation-delay: 0.3s; }
+        .wave:nth-child(5) { animation-delay: 0.4s; }
+    
+        /* Responsive adjustments */
+        @media (max-height: 600px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1vh;
+            }
+    
+            .controls button {
+                padding: 10px 20px;
+            }
+    
+            #transcriptionArea {
+                min-height: 50vh;
+            }
+        }
+    
+        @media (max-width: 600px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+    
+            .controls button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Speech Recognition App</h1>
+        
+        <div class="recording-indicator">
+            <i class="fas fa-microphone mic-icon" id="micIcon"></i>
+        </div>
+
+        <div class="noise-waves" id="noiseWaves">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="adjustNoiseButton">
+                <i class="fas fa-sliders-h"></i>
+                Adjust for Noise
+            </button>
+            <button id="startButton">
+                <i class="fas fa-play"></i>
+                Start Recording
+            </button>
+            <button id="stopButton" disabled>
+                <i class="fas fa-stop"></i>
+                Stop Recording
+            </button>
+        </div>
+
+        <div id="status">
+            <span class="status-indicator">Ready to record</span>
+        </div>
+        
+        <div class="progress-container" id="progressContainer">
+            <div class="progress-text" id="progressText">0%</div>
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-animation"></div>
+            </div>
+        </div>
+        
+        <textarea id="transcriptionArea" readonly placeholder="Transcription will appear here..."></textarea>
+        
+        <div id="downloadSection">
+            <a id="downloadLink" style="display: none">
+                <i class="fas fa-download"></i>
+                <span>Download Transcription</span>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const adjustNoiseButton = document.getElementById('adjustNoiseButton');
+        const status = document.getElementById('status');
+        const transcriptionArea = document.getElementById('transcriptionArea');
+        const downloadLink = document.getElementById('downloadLink');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const micIcon = document.getElementById('micIcon');
+        const noiseWaves = document.getElementById('noiseWaves');
+
+        let isRecording = false;
+        let progressInterval;
+
+        function updateStatus(message, type = 'info') {
+            const statusSpan = status.querySelector('.status-indicator') || document.createElement('span');
+            statusSpan.className = `status-indicator ${type}`;
+            statusSpan.textContent = message;
+            if (!status.contains(statusSpan)) {
+                status.appendChild(statusSpan);
+            }
+        }
+
+        function toggleButtons(recording) {
+            startButton.disabled = recording;
+            stopButton.disabled = !recording;
+            adjustNoiseButton.disabled = recording;
+            
+            // Toggle microphone animation
+            if (recording) {
+                micIcon.classList.add('recording');
+            } else {
+                micIcon.classList.remove('recording');
+            }
+        }
+
+        function updateProgress(progress) {
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${progress}%`;
+        }
+
+        function startProgressSimulation() {
+            let progress = 0;
+            progressContainer.style.display = 'block';
+            updateProgress(0);
+
+            progressInterval = setInterval(() => {
+                if (progress < 90) {
+                    progress += Math.random() * 5;
+                    progress = Math.min(90, progress);
+                    updateProgress(Math.round(progress));
+                }
+            }, 300);
+        }
+
+        function completeProgress() {
+            clearInterval(progressInterval);
+            updateProgress(100);
+            setTimeout(() => {
+                progressContainer.style.display = 'none';
+            }, 1000);
+        }
+
+        adjustNoiseButton.addEventListener('click', async () => {
+            try {
+                updateStatus('Adjusting for ambient noise...', 'warning');
+                adjustNoiseButton.disabled = true;
+                noiseWaves.style.display = 'flex';
+                
+                const response = await fetch('/adjust-noise', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('Noise adjustment complete', 'success');
+                } else {
+                    updateStatus(`Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                adjustNoiseButton.disabled = false;
+                noiseWaves.style.display = 'none';
+            }
+        });
+
+        startButton.addEventListener('click', async () => {
+            isRecording = true;
+            toggleButtons(true);
+            updateStatus('Recording...', 'warning');
+            startProgressSimulation();
+            
+            try {
+                const response = await fetch('/listen', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    completeProgress();
+                    transcriptionArea.value = data.text;
+                    updateStatus('Recording complete', 'success');
+                    
+                    downloadLink.href = `/download/${data.filename}`;
+                    downloadLink.download = data.filename;
+                    downloadLink.querySelector('span').textContent = `Download ${data.filename}`;
+                    downloadLink.style.display = 'inline-flex';
+                } else {
+                    updateStatus(`Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                isRecording = false;
+                toggleButtons(false);
+            }
+        });
+
+        stopButton.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/stop-listening', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('Recording stopped', 'success');
+                } else {
+                    updateStatus(`Error: ${data.detail}`, 'error');
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                isRecording = false;
+                toggleButtons(false);
+                clearInterval(progressInterval);
+                progressContainer.style.display = 'none';
+            }
+        });
+
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                
+                if (data.speech_recognition_available) {
+                    updateStatus('Ready to record', 'success');
+                } else {
+                    updateStatus('Speech recognition not available', 'error');
+                    startButton.disabled = true;
+                    stopButton.disabled = true;
+                    adjustNoiseButton.disabled = true;
+                }
+            } catch (error) {
+                updateStatus('Cannot connect to server', 'error');
+                startButton.disabled = true;
+                stopButton.disabled = true;
+                adjustNoiseButton.disabled = true;
+            }
+        }
+
+        checkHealth();
+    </script>
+</body>
+</html>

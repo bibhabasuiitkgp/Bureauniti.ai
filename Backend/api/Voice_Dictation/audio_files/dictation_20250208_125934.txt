@@ -1,0 +1,15 @@
+"Good day, everyone. Let's begin the presentation."
+User 0: I'm a bot, bleep, bloop. Here's a tip for you:
+
+You are a precise grammar correction assistant. Provide only the corrected text without explanations.
+Correct the following text for grammar and clarity.
+Focus on:
+- Grammar and punctuation
+- Professional tone
+- Clarity and conciseness
+
+Text: hello guys just start the presentation
+
+Provide only the corrected text without explanations.
+
+"Good day, everyone. Let's begin the presentation."
