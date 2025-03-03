@@ -70,7 +70,7 @@ app = FastAPI()
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-@app.post("/inference")
+@app.get("/inference")
 def run_inference(request: InferenceRequest):
     try:
         result = inference(request.query)
@@ -78,7 +78,7 @@ def run_inference(request: InferenceRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/analyze")
+@app.get("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     try:
         if not file.content_type.startswith('image/'):
@@ -110,7 +110,7 @@ async def analyze_image(file: UploadFile = File(...)):
             os.remove(file_path)
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.post("/translate/", response_model=TranslationResponse)
+@app.get("/translate/", response_model=TranslationResponse)
 async def translate_text(request: TranslationRequest):
     try:
         valid_languages = {"English", "Hindi"}
@@ -175,7 +175,7 @@ async def translate_text(request: TranslationRequest):
             }
         )
 
-@app.post("/process-audio/", response_model=TranscriptionResponse)
+@app.get("/process-audio/", response_model=TranscriptionResponse)
 async def process_audio(
     file: UploadFile = File(...),
     model_name: Optional[str] = "mixtral-8x7b-32768"
@@ -224,7 +224,7 @@ async def process_audio(
             content={"error": f"An error occurred: {str(e)}"}
         )
 
-@app.post("/correct-text/")
+@app.get("/correct-text/")
 async def correct_text(text: str, model_name: Optional[str] = "mixtral-8x7b-32768"):
     """
     Process text input and return grammar-corrected response.
@@ -271,8 +271,32 @@ async def setup_rag_system(api_key: str = "orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF"):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error initializing RAG system: {str(e)}")
+    
 
-@app.post("/process", response_model=AnswerResponse)
+    
+@app.get("/answer_constitution", response_model=AnswerResponse)
+async def answer_constitution_question(question: str, api_key : str = "orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF"):
+    """
+    Answer a question related to the Constitution of India.
+    """
+    rag_system_constitution = RAGSystem(api_key=api_key)
+    
+    vector_store_dir = r"Pdf_Qna\vectorstore_constitution_of_India"
+    try:
+        answer = rag_system_constitution.query_from_saved_vectorstore(
+        vector_store_dir,
+        question
+    )
+        
+        return AnswerResponse(
+            question=question,
+            answer=answer,
+            timestamp=get_timestamp()
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+
+@app.get("/process", response_model=AnswerResponse)
 async def process_document_and_question(
     question: str, 
     file: Optional[UploadFile] = File(None)

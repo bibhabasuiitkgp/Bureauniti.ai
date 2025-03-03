@@ -9,6 +9,9 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
+import shutil
+from pathlib import Path
+import uuid
 
 class DocumentProcessor:
     """
@@ -66,6 +69,8 @@ class EmbeddingEngine:
         """
         self.embeddings = HuggingFaceEmbeddings(model_name=model_name)
         self.vectorstore = None
+        self.model_name = model_name
+        self.documents = []  # Store the original documents
     
     def create_vectorstore(self, documents: List[Document]) -> None:
         """
@@ -74,7 +79,61 @@ class EmbeddingEngine:
         Args:
             documents: List of documents to embed
         """
+        self.documents = documents  # Store the original documents
         self.vectorstore = Chroma.from_documents(documents=documents, embedding=self.embeddings)
+    
+    def save_vectorstore(self, directory: str) -> None:
+        """
+        Save the vector store to a local directory
+        
+        Args:
+            directory: Directory path to save the vector store
+        """
+        if self.vectorstore is None or not self.documents:
+            raise ValueError("Vector store not created yet or no documents available. Call create_vectorstore first.")
+            
+        # Create directory if it doesn't exist
+        directory_path = Path(directory)
+        directory_path.mkdir(parents=True, exist_ok=True)
+        
+        # If directory already has data, we'll clean it to prevent conflicts
+        if directory_path.exists():
+            for item in directory_path.glob("*"):
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+        
+        # Create a new persistent Chroma instance with the same documents
+        # The persist_directory parameter will make this automatically persistent
+        persistent_vectorstore = Chroma.from_documents(
+            documents=self.documents,
+            embedding=self.embeddings,
+            persist_directory=str(directory_path)
+        )
+        
+        # Update our reference to the persistent store
+        self.vectorstore = persistent_vectorstore
+        
+        print(f"Vector store saved to {directory_path}")
+    
+    def load_vectorstore(self, directory: str) -> None:
+        """
+        Load a vector store from a local directory
+        
+        Args:
+            directory: Directory path where the vector store is saved
+        """
+        directory_path = Path(directory)
+        if not directory_path.exists():
+            raise ValueError(f"Directory {directory_path} does not exist")
+        
+        # Load the Chroma vector store from the directory
+        self.vectorstore = Chroma(
+            persist_directory=str(directory_path),
+            embedding_function=self.embeddings
+        )
+        print(f"Vector store loaded from {directory_path}")
     
     def get_retriever(self):
         """
@@ -84,7 +143,7 @@ class EmbeddingEngine:
             Document retriever
         """
         if self.vectorstore is None:
-            raise ValueError("Vector store not created yet. Call create_vectorstore first.")
+            raise ValueError("Vector store not created yet. Call create_vectorstore or load_vectorstore first.")
         return self.vectorstore.as_retriever()
 
 
@@ -173,6 +232,24 @@ class RAGSystem:
         splits = self.document_processor.split_documents(documents)
         self.embedding_engine.create_vectorstore(splits)
     
+    def save_vectorstore(self, directory: str) -> None:
+        """
+        Save the vector store to a local directory
+        
+        Args:
+            directory: Directory path to save the vector store
+        """
+        self.embedding_engine.save_vectorstore(directory)
+    
+    def load_vectorstore(self, directory: str) -> None:
+        """
+        Load a vector store from a local directory
+        
+        Args:
+            directory: Directory path where the vector store is saved
+        """
+        self.embedding_engine.load_vectorstore(directory)
+    
     def setup_chain(self, custom_system_prompt: Optional[str] = None) -> None:
         """
         Set up the RAG chain
@@ -212,16 +289,54 @@ class RAGSystem:
         """
         result = self.query(question)
         return result["answer"]
+    
+    def query_from_saved_vectorstore(self, directory: str, question: str) -> str:
+        """
+        Query using a previously saved vector store
+        
+        Args:
+            directory: Directory path where the vector store is saved
+            question: Question to ask
+            
+        Returns:
+            Answer string
+        """
+        # Load the vectorstore
+        self.load_vectorstore(directory)
+        
+        # Set up the chain and query
+        if self.rag_chain is None:
+            self.setup_chain()
+        
+        # Get the answer
+        return self.get_answer(question)
 
 
 def main():
-
     rag = RAGSystem(api_key="orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF")
     
-    rag.ingest_pdf("BANDIT_AR.pdf")
+    print("Starting RAG system...")
     
-    answer = rag.get_answer("What is bandit algorithm?")
-    print(answer)
+    rag.ingest_pdf("constitution_of_India.pdf")
+    
+    print("PDF ingested successfully.")
+    
+    vector_store_dir = "vectorstore_constitution_of_India"
+    rag.save_vectorstore(vector_store_dir)
+    
+    print("Vector store saved successfully.")
+    
+    answer = rag.get_answer("What is preamble of India?")
+    print("Answer from original vectorstore:", answer)
+    
+
+    new_rag = RAGSystem(api_key="orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF")
+    
+    answer = new_rag.query_from_saved_vectorstore(
+        vector_store_dir,
+        "What is preamble of India?"
+    )
+    print("Answer from saved vectorstore:", answer)
 
 
 if __name__ == "__main__":

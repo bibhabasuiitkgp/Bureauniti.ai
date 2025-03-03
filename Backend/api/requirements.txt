@@ -1,0 +1,9 @@
+pypdf
+uvicorn
+fastapi
+langchain
+langchain_groq
+langchain-huggingface
+sentence_transformers
+langchain_community
+langchain-mistralai
