@@ -105,7 +105,7 @@ app.add_middleware(
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
-@app.get("/inference")
+@app.post("/inference")
 def run_inference(request: InferenceRequest):
     try:
         result = inference(request.query)
@@ -113,7 +113,7 @@ def run_inference(request: InferenceRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/analyze")
+@app.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     try:
         if not file.content_type.startswith("image/"):
@@ -138,7 +138,7 @@ async def analyze_image(file: UploadFile = File(...)):
             os.remove(file_path)
         raise HTTPException(status_code=500, detail=str(e))
     
-@app.get("/translate/", response_model=TranslationResponse)
+@app.post("/translate/", response_model=TranslationResponse)
 async def translate_text(request: TranslationRequest):
     try:
         valid_languages = {"English", "Hindi"}
@@ -199,7 +199,7 @@ async def translate_text(request: TranslationRequest):
             status_code=500, detail={"error": "Translation error", "message": str(e)}
         )
 
-@app.get("/process-audio/", response_model=TranscriptionResponse)
+@app.post("/process-audio/", response_model=TranscriptionResponse)
 async def process_audio(
     file: UploadFile = File(...), model_name: Optional[str] = "mixtral-8x7b-32768"
 ):
@@ -245,7 +245,7 @@ async def process_audio(
             status_code=500, content={"error": f"An error occurred: {str(e)}"}
         )
 
-@app.get("/correct-text/")
+@app.post("/correct-text/")
 async def correct_text(text: str, model_name: Optional[str] = "mixtral-8x7b-32768"):
     """
     Process text input and return grammar-corrected response.
@@ -299,7 +299,7 @@ async def setup_rag_system(api_key: str = "orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF"):
     
 
     
-@app.get("/answer_constitution", response_model=AnswerResponse)
+@app.post("/answer_constitution", response_model=AnswerResponse)
 async def answer_constitution_question(question: str, api_key : str = "orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF"):
     """
     Answer a question related to the Constitution of India.
@@ -321,7 +321,7 @@ async def answer_constitution_question(question: str, api_key : str = "orjLf2qy6
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/process", response_model=AnswerResponse)
+@app.post("/process", response_model=AnswerResponse)
 async def process_document_and_question(
     question: str, file: Optional[UploadFile] = File(None)
 ):
