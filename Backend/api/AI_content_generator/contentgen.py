@@ -10,7 +10,7 @@ from pydantic import Field
 
 load_dotenv()
 
-os.environ["GROQ_API_KEY"] = "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"
+os.environ["GROQ_API_KEY"] = "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"
 os.environ["TAVILY_API_KEY"] = "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"
 
 llm = ChatGroq(
