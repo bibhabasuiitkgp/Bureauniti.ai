@@ -9,20 +9,23 @@ body {
     background-color: #f5f6fa;
 }
 
+/* Modify container styles */
 .container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    /* Change from min-height to height */
     overflow: hidden;
+    /* Prevent scrolling */
 }
 
-/* Profile Section Styles */
+/* Modify profile section styles */
 .profile-section {
     width: 20%;
-    background-color: #ffffff;
-    padding: 2rem;
-    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    /* Allow scrolling if content overflows */
+    padding: 1.5rem;
+    /* Slightly reduce padding */
 }
 
 .profile-header {
@@ -122,34 +125,38 @@ body {
     transform: translateY(-3px);
 }
 
-/* Calendar Section Styles */
-
-
-.calendar-actions {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-}
-
-
-
+/* Modify calendar section styles */
 .calendar-section {
     width: 80%;
-    scale: 0.9;
+    height: 100vh;
+    /* padding-top: 2rem; */
+    padding: 1.5rem 1.5rem 0rem 1.5rem;
+    overflow-y: auto;
+    /* Allow scrolling if content overflows */
+    display: flex;
+    flex-direction: column;
 }
+
+/* Adjust calendar container */
+#calendar {
+    flex: 1;
+    min-height: 0;
+    scale: 0.86;
+    /* Allow calendar to shrink */
+}
+
 
 .calendar-header {
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    /* margin-bottom: 1rem; */
 }
 
 .calendar-header h2 {
     color: #2c3e50;
 }
 
-#addEventBtn,
-.tools-btn {
+#addEventBtn {
     padding: 0.8rem 1.5rem;
     background-color: #3498db;
     color: white;
@@ -160,27 +167,14 @@ body {
     align-items: center;
     gap: 0.5rem;
     transition: all 0.3s ease;
-    text-decoration: none;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
 }
 
-#addEventBtn:hover,
-.tools-btn:hover {
+#addEventBtn:hover {
     background-color: #2980b9;
     transform: translateY(-2px);
 }
 
-.tools-btn i {
-    font-size: 1rem;
-}
 
-/* Evo Calendar Custom Styles */
-#calendar {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    border-radius: 15px;
-    overflow: hidden;
-}
 
 .evo-calendar {
     background-color: #ffffff !important;
@@ -265,17 +259,27 @@ body {
     opacity: 1;
 }
 
+/* Modal adjustments */
 .modal-content {
     background-color: #fff;
-    margin: 2% auto;
-    padding: 1.25rem;
-    border-radius: 12px;
+    margin: 3% auto;
+    /* Reduce top margin */
+    padding: 1.5rem;
+    border-radius: 15px;
     width: 90%;
-    max-width: 400px;
+    max-width: 450px;
+    /* Slightly reduce max-width */
+    max-height: 90vh;
+    /* Limit height */
     position: relative;
     transform: translateY(-20px);
     transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    /* Hide overflow */
 }
+
 
 .modal.show .modal-content {
     transform: translateY(0);
@@ -283,69 +287,69 @@ body {
 
 .close-modal {
     position: absolute;
-    right: 15px;
-    top: 10px;
-    font-size: 20px;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
     cursor: pointer;
     color: #7f8c8d;
     transition: color 0.3s ease;
+}
+
+/* Add scroll to form */
+#eventForm {
+    overflow-y: auto;
+    padding-right: 10px;
+    /* Add space for scrollbar */
+    margin-top: 1rem;
 }
 
 .close-modal:hover {
     color: #2c3e50;
 }
 
-.modal-content h3 {
-    font-size: 1.2rem;
-    margin-bottom: 1rem;
-    padding-right: 20px;
-}
-
 .form-group {
-    margin-bottom: 0.8rem;
+    margin-bottom: 1rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.5rem;
     color: #2c3e50;
     font-weight: 500;
-    font-size: 0.9rem;
 }
 
 .form-group input,
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 0.5rem;
+    padding: 0.8rem;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    border-radius: 5px;
+    font-size: 1rem;
     transition: border-color 0.3s ease;
 }
 
-.form-group textarea {
-    height: 60px;
-    /* Reduce textarea height */
-    resize: vertical;
-    min-height: 60px;
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+    border-color: #3498db;
+    outline: none;
 }
 
 .form-actions {
     display: flex;
-    gap: 0.8rem;
+    gap: 1rem;
     justify-content: flex-end;
-    margin-top: 1rem;
+    margin-top: 2rem;
 }
 
 .btn-save,
 .btn-cancel {
-    padding: 0.5rem 1rem;
+    padding: 0.8rem 1.5rem;
     border: none;
-    border-radius: 4px;
+    border-radius: 5px;
     cursor: pointer;
     font-weight: 500;
-    font-size: 0.9rem;
     transition: all 0.3s ease;
 }
 
@@ -367,19 +371,27 @@ body {
     background-color: #dfe4ea;
 }
 
-/* Remove previously added scroll styles as they're no longer needed */
-#eventForm {
-    padding-right: 0;
-    margin-top: 0.5rem;
+
+
+.calendar-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
 
-/* Adjust color input size */
-#eventColor {
-    padding: 0;
-    height: 35px;
-}
-
-/* Make select boxes smaller */
-select {
-    height: 35px;
+#addEventBtn,
+.tools-btn {
+    padding: 0.8rem 1.5rem;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
 }
