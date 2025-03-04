@@ -425,7 +425,10 @@ body {
 }
 
 .stats-card {
+    justify-content: center;
     text-align: center;
+    align-items: center;
+    vertical-align: middle;
     padding: 15px;
     box-shadow: var(--shadow);
     border-radius: var(--radius-12);
