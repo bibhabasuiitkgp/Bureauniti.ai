@@ -237,9 +237,13 @@ async def correct_text(text: str, model_name: Optional[str] = "mixtral-8x7b-3276
         generator = ProfessionalResponseGenerator(model_name=model_name)
         response_data = generator.generate_response(text)
         
+        print(response_data)
+        
+        
         if isinstance(response_data, dict) and 'original_text' in response_data:
-            if 'corrected_text' in response_data:
-                corrected_response = response_data['corrected_text']
+            if 'corrected_version' in response_data:
+                corrected_response = response_data['corrected_version']
+                corrected_response = corrected_response[1:len(corrected_response)-1]
             else:
                 corrected_response = str(response_data)
         else:

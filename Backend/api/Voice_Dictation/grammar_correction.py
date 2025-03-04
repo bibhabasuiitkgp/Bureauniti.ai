@@ -189,7 +189,6 @@ class ProfessionalResponseGenerator:
         
         result = self.process_statement(query)
         
-        # Format the response as a structured output
         response = {
             "original_text": result["original_text"],
             "corrected_version": result["corrected_text"],

@@ -6,12 +6,29 @@ from langchain_chroma import Chroma
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.chains import create_retrieval_chain
+from langchain_community.tools import TavilySearchResults
+from langchain_core.runnables import RunnableConfig, chain
+from langchain.chat_models import init_chat_model
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.documents import Document
 import shutil
 from pathlib import Path
 import uuid
+
+os.environ["GROQ_API_KEY"] = "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"
+os.environ["TAVILY_API_KEY"] = "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"
+
+
+tool = TavilySearchResults(
+    max_results=5,
+    search_depth="advanced",
+    include_answer=True,
+    include_raw_content=True,
+    include_images=True
+)
+
+
 
 class DocumentProcessor:
     """
@@ -128,7 +145,6 @@ class EmbeddingEngine:
         if not directory_path.exists():
             raise ValueError(f"Directory {directory_path} does not exist")
         
-        # Load the Chroma vector store from the directory
         self.vectorstore = Chroma(
             persist_directory=str(directory_path),
             embedding_function=self.embeddings
@@ -151,7 +167,7 @@ class LLMEngine:
     """
     Handles LLM interactions and chain creation
     """
-    def __init__(self, api_key: Optional[str] = None, model: str = "mistral-large-latest"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "llama3-70b-8192"):
         """
         Initialize the LLM engine
         
@@ -275,6 +291,11 @@ class RAGSystem:
         if self.rag_chain is None:
             self.setup_chain()
         
+        response = tool.invoke({"query": question})
+        web_context = ""
+        for elem in response:
+            web_context += elem['content']
+        question = question + "\n\n" + web_context
         return self.rag_chain.invoke({"input": question})
     
     def get_answer(self, question: str) -> str:
@@ -301,40 +322,37 @@ class RAGSystem:
         Returns:
             Answer string
         """
-        # Load the vectorstore
         self.load_vectorstore(directory)
         
-        # Set up the chain and query
         if self.rag_chain is None:
             self.setup_chain()
         
-        # Get the answer
         return self.get_answer(question)
 
 
 def main():
-    rag = RAGSystem(api_key="orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF")
+    # rag = RAGSystem(api_key="orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF")
     
-    print("Starting RAG system...")
+    # print("Starting RAG system...")
     
-    rag.ingest_pdf("constitution_of_India.pdf")
+    # rag.ingest_pdf("constitution_of_India.pdf")
     
-    print("PDF ingested successfully.")
+    # print("PDF ingested successfully.")
     
     vector_store_dir = "vectorstore_constitution_of_India"
-    rag.save_vectorstore(vector_store_dir)
+    # rag.save_vectorstore(vector_store_dir)
     
-    print("Vector store saved successfully.")
+    # print("Vector store saved successfully.")
     
-    answer = rag.get_answer("What is preamble of India?")
-    print("Answer from original vectorstore:", answer)
+    # answer = rag.get_answer("What is preamble of India?")
+    # print("Answer from original vectorstore:", answer)
     
 
     new_rag = RAGSystem(api_key="orjLf2qy6YnY5oOanmFFzS0u7Z15tUyF")
     
     answer = new_rag.query_from_saved_vectorstore(
         vector_store_dir,
-        "What is preamble of India?"
+        "What is sovereignty?"
     )
     print("Answer from saved vectorstore:", answer)
 
